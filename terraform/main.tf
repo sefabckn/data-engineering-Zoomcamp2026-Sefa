@@ -1,22 +1,24 @@
 terraform {
   required_providers {
     google = {
-      source = "hashicorp/google"
+      source  = "hashicorp/google"
       version = "7.16.0"
     }
   }
 }
 
 provider "google" {
-  project     = "taxi-rides-ny-485508"
-  region      = "europe-central2"
+  project     = var.project
+  region      = var.region
+  credentials = var.credentials
 }
 
 resource "google_storage_bucket" "demo-bucket" {
-  name          = "taxi-rides-ny-485508-terra-bucket"
-  location      = "EU"
-  force_destroy = true
+  name                        = var.gcs_bucket_name
+  location                    = var.location
+  force_destroy               = true
   uniform_bucket_level_access = true
+
   lifecycle_rule {
     condition {
       age = 1
@@ -34,4 +36,8 @@ resource "google_storage_bucket" "demo-bucket" {
       type = "AbortIncompleteMultipartUpload"
     }
   }
+}
+
+resource "google_bigquery_dataset" "dataset" {
+  dataset_id = var.bq_dataset_name
 }
