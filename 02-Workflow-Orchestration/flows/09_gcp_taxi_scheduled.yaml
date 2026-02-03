@@ -1,7 +1,8 @@
-id: 08_gcp_taxi
+id: 09_gcp_taxi_scheduled
 namespace: zoomcamp
 description: |
-  The CSV Data used in the course: https://github.com/DataTalksClub/nyc-tlc-data/releases
+  Best to add a label `backfill:true` from the UI to track executions created via a backfill.
+  CSV data used here comes from: https://github.com/DataTalksClub/nyc-tlc-data/releases
 
 inputs:
 - id: taxi
@@ -9,19 +10,6 @@ inputs:
   displayName: Select taxi type
   values: [ yellow, green ]
   defaults: green
-
-- id: year
-  type: SELECT
-  displayName: Select year
-  values: [ "2019", "2020" ]
-  defaults: "2019"
-  allowCustomValue: true
-
-- id: month
-  type: SELECT
-  displayName: Select month
-  values: [ "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" ]
-  defaults: "01"
 
 variables:
   file: "{{inputs.taxi}}_tripdata_{{trigger.date | date('yyyy-MM')}}.csv"
@@ -46,7 +34,7 @@ tasks:
   - wget -qO- https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{{inputs.taxi}}/{{render(vars.file)}}.gz | gunzip > {{render(vars.file)}}
 
 - id: upload_to_gcs
-  type: io.kestra.plugin.gcs.gcs.Upload
+  type: io.kestra.plugin.gcp.gcs.Upload
   from: "{{render(vars.data)}}"
   to: "{{render(vars.gcs_file)}}"
 
@@ -112,32 +100,33 @@ tasks:
           skip_leading_rows = 1,
           ignore_unknown_values = TRUE
       );
-- id: bq_yellow_table_tmp
-  type: io.kestra.plugin.gcp.bigquery.Query
-  sql: |
-    CREATE OR REPLACE TABLE `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}`
-    AS
-    SELECT
-      MD5(CONCAT(
-        COALESCE(CAST(VendorID AS STRING), ""),
-        COALESCE(CAST(tpep_pickup_datetime AS STRING), ""),
-        COALESCE(CAST(tpep_dropoff_datetime AS STRING), ""),
-        COALESCE(CAST(PULocationID AS STRING), ""),
-        COALESCE(CAST(DOLocationID AS STRING), "")
-      )) AS unique_row_id,
-      "{{render(vars.file)}}" AS filename,
-      *
-    FROM `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}_ext`;
 
-- id: bq_yellow_merge
-  type: io.kestra.plugin.gcp.bigquery.Query
-  sql: |
-    MERGE INTO `{{kv('GCP_PROJECT_ID')}}.{{kv('GCP_DATASET')}}.yellow_tripdata` T
-    USING `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}` S
-    ON T.unique_row_id = S.unique_row_id
-    WHEN NOT MATCHED THEN
-      INSERT (unique_row_id, filename, VendorID, tpep_pickup_datetime, tpep_dropoff_datetime, passenger_count, trip_distance, RatecodeID, store_and_fwd_flag, PULocationID, DOLocationID, payment_type, fare_amount, extra, mta_tax, tip_amount, tolls_amount, improvement_surcharge, total_amount, congestion_surcharge)
-      VALUES (S.unique_row_id, S.filename, S.VendorID, S.tpep_pickup_datetime, S.tpep_dropoff_datetime, S.passenger_count, S.trip_distance, S.RatecodeID, S.store_and_fwd_flag, S.PULocationID, S.DOLocationID, S.payment_type, S.fare_amount, S.extra, S.mta_tax, S.tip_amount, S.tolls_amount, S.improvement_surcharge, S.total_amount, S.congestion_surcharge);
+  - id: bq_yellow_table_tmp
+    type: io.kestra.plugin.gcp.bigquery.Query
+    sql: |
+      CREATE OR REPLACE TABLE `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}`
+      AS
+      SELECT
+        MD5(CONCAT(
+          COALESCE(CAST(VendorID AS STRING), ""),
+          COALESCE(CAST(tpep_pickup_datetime AS STRING), ""),
+          COALESCE(CAST(tpep_dropoff_datetime AS STRING), ""),
+          COALESCE(CAST(PULocationID AS STRING), ""),
+          COALESCE(CAST(DOLocationID AS STRING), "")
+        )) AS unique_row_id,
+        "{{render(vars.file)}}" AS filename,
+        *
+      FROM `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}_ext`;
+
+  - id: bq_yellow_merge
+    type: io.kestra.plugin.gcp.bigquery.Query
+    sql: |
+      MERGE INTO `{{kv('GCP_PROJECT_ID')}}.{{kv('GCP_DATASET')}}.yellow_tripdata` T
+      USING `{{kv('GCP_PROJECT_ID')}}.{{render(vars.table)}}` S
+      ON T.unique_row_id = S.unique_row_id
+      WHEN NOT MATCHED THEN
+        INSERT (unique_row_id, filename, VendorID, tpep_pickup_datetime, tpep_dropoff_datetime, passenger_count, trip_distance, RatecodeID, store_and_fwd_flag, PULocationID, DOLocationID, payment_type, fare_amount, extra, mta_tax, tip_amount, tolls_amount, improvement_surcharge, total_amount, congestion_surcharge)
+        VALUES (S.unique_row_id, S.filename, S.VendorID, S.tpep_pickup_datetime, S.tpep_dropoff_datetime, S.passenger_count, S.trip_distance, S.RatecodeID, S.store_and_fwd_flag, S.PULocationID, S.DOLocationID, S.payment_type, S.fare_amount, S.extra, S.mta_tax, S.tip_amount, S.tolls_amount, S.improvement_surcharge, S.total_amount, S.congestion_surcharge);
 
 - id: if_green_taxi
   type: io.kestra.plugin.core.flow.If
@@ -235,8 +224,7 @@ tasks:
 
 - id: purge_files
   type: io.kestra.plugin.core.storage.PurgeCurrentExecutionFiles
-  description: If you'd like to explore Kestra outputs, disable it.
-  disabled: false
+  description: To avoid cluttering your storage, we will remove the downloaded files
 
 pluginDefaults:
 - type: io.kestra.plugin.gcp
@@ -255,6 +243,6 @@ triggers:
 
 - id: yellow_schedule
   type: io.kestra.plugin.core.trigger.Schedule
-  cron: "0 10 1 * "
+  cron: "0 10 1 * *"
   inputs:
     taxi: yellow
