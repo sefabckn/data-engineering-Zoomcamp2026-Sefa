@@ -160,10 +160,3 @@ See the `flows/` directory for course-provided examples. These include simple de
 This folder contains course material. Check the repository root for the project license and attribution.
 
 ---
-
-If you want, I can:
-- Add badges and a short summary top-of-file
-- Convert one of the example flows into a step-by-step tutorial section below
-- Add a `Makefile` or helper script to simplify common commands
-
-Tell me which of these you'd like and I'll add it next.
