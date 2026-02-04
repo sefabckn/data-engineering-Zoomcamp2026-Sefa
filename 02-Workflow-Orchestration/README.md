@@ -1,5 +1,17 @@
 # Workflow Orchestration — Kestra + Examples
 
+## Architecture (visual)
+
+![Workflow diagram](pics/workflow.png)
+
+<!-- Fallback: simple ASCII overview -->
+```
+User -> Kestra UI/API -> Kestra Server
+Kestra Server -> Postgres (kestra_postgres)
+Kestra Server -> /app/flows (mounted from ./flows)
+Kestra Server -> Docker socket (/var/run/docker.sock) for container tasks
+```
+
 This folder contains a self-contained environment to run Kestra (an open-source orchestration and workflow engine) locally using Docker Compose, along with example flows used in the course/module. The README below explains how to run, develop, and troubleshoot the setup, and contains tips for Windows users.
 
 **Quick Links**
