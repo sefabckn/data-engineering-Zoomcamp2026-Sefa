@@ -1,6 +1,6 @@
 # Workflow Orchestration — Kestra + Examples
 
-## Architecture (visual)
+## Architecture
 
 ![Workflow diagram](pics/workflow.png)
 
