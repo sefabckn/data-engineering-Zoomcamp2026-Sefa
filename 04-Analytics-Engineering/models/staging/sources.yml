@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: taxi_rides_ny
+    description: "Raw data for ny_taxi green and yellow zones"
+    database: taxi-rides-ny-485508 # project id
+    schema: zoomcamp # dataset
+    tables:
+      - name: green_tripdata
+      - name: yellow_tripdata_non_partitioned
+
