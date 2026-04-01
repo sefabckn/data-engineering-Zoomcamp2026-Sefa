@@ -1,7 +1,7 @@
 
 variable "credentials" {
   description = "my credentials"
-  default     = "C:/Users/afesb/Desktop/data-engineering-Zoomcamp2026-Sefa/terraform/keys/my-cred.json"
+  default     = "./keys/my-cred.json"
 }
 
 
@@ -11,12 +11,12 @@ variable "project" {
 }
 
 variable "region" {
-  default = "europe-central2"
+  default = "us-central1"
 }
 
 variable "location" {
   description = "The location information if GCS server"
-  default     = "EU"
+  default     = "US"
 }
 
 variable "gcs_bucket_name" {
@@ -25,7 +25,7 @@ variable "gcs_bucket_name" {
 }
 
 variable "bq_dataset_name" {
-  default     = "demo_dataset"
+  default     = "zoomcamp"
   description = "My bigquery dataset name "
 }
 
