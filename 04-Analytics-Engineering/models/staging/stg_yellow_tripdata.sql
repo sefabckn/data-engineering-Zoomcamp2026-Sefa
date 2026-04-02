@@ -1,5 +1,4 @@
 SELECT 
-
     -- Identifiers
     cast(VendorID as integer) as vendor_id,
     RatecodeID  as rate_code_id,
@@ -7,8 +6,8 @@ SELECT
     cast(DOLocationID as integer) as dropoff_location_id,
 
     --timestamps
-    cast(lpep_pickup_datetime as timestamp) as pickup_datetime,
-    cast(lpep_dropoff_datetime as timestamp) as dropoff_datetime,
+    cast(tpep_pickup_datetime as timestamp) as pickup_datetime,
+    cast(tpep_dropoff_datetime as timestamp) as dropoff_datetime,
 
     --trip info 
     cast(store_and_fwd_flag as string) as store_and_fwd_flag,
@@ -24,5 +23,5 @@ SELECT
     cast(ehail_fee as numeric) as ehail_fee,
     cast(improvement_surcharge as numeric) as improvement_surcharge,
     cast(total_amount as numeric) as total_amount,
-FROM {{ source('taxi_rides_ny', 'green_tripdata')}}
+FROM {{ source('taxi_rides_ny', 'yellow_tripdata')}}
 WHERE VendorID IS NOT NULL
