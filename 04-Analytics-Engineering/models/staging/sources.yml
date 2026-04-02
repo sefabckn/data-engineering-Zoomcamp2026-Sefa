@@ -7,5 +7,5 @@ sources:
     schema: zoomcamp # dataset
     tables:
       - name: green_tripdata
-      - name: yellow_tripdata_non_partitioned
+      - name: yellow_tripdata
 
