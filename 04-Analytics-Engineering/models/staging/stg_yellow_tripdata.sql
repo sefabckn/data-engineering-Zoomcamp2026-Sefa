@@ -1,5 +1,10 @@
-SELECT 
-        -- identifiers (standardized naming for consistency across yellow/green)
+WITH source AS (
+    SELECT * FROM {{ source('taxi_rides_ny', 'yellow_tripdata')}}
+)
+, renamed_cols AS (
+
+    SELECT 
+       -- identifiers (standardized naming for consistency across yellow/green)
         cast(vendorid as integer) as vendor_id,
         cast(ratecodeid as integer) as rate_code_id,
         cast(pulocationid as integer) as pickup_location_id,
@@ -23,5 +28,8 @@ SELECT
         cast(improvement_surcharge as numeric) as improvement_surcharge,
         cast(total_amount as numeric) as total_amount,
         cast(payment_type as integer) as payment_type
-FROM {{ source('taxi_rides_ny', 'yellow_tripdata')}}
-WHERE VendorID IS NOT NULL
+
+    FROM {{ source('taxi_rides_ny', 'yellow_tripdata')}}
+    WHERE VendorID IS NOT NULL
+)
+SELECT * FROM renamed_cols

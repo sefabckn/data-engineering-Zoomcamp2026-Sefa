@@ -1,4 +1,8 @@
-SELECT 
+WITH source AS (
+    SELECT * FROM {{source("taxi_rides_ny", 'green_tripdata')}}
+),
+renamed_cols as (
+    SELECT 
 
     -- Identifiers
     cast(VendorID as integer) as vendor_id,
@@ -24,5 +28,8 @@ SELECT
     cast(ehail_fee as numeric) as ehail_fee,
     cast(improvement_surcharge as numeric) as improvement_surcharge,
     cast(total_amount as numeric) as total_amount,
-FROM {{ source('taxi_rides_ny', 'green_tripdata')}}
-WHERE VendorID IS NOT NULL
+    FROM {{ source('taxi_rides_ny', 'green_tripdata')}}
+    WHERE VendorID IS NOT NULL
+)
+SELECT * FROM renamed_cols
+
